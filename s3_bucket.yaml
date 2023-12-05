@@ -1,0 +1,40 @@
+---
+- name: Configure s3 bucket for my resume
+  hosts: localhost
+  gather_facts: false
+  
+  tasks:
+    - name: Create an S3 bucket
+      amazon.aws.s3_bucket:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        name: resumes3bucket
+        state: present
+        acl: public-read
+        policy: "{{ lookup('file', 'policy.json') }}"
+
+    - name: Upload html index
+      amazon.aws.s3_object:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        bucket: resumes3bucket
+        object: index.html
+        src: DevOps.html
+        mode: put
+
+    - name: Upload css file
+      amazon.aws.s3_object:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        bucket: resumes3bucket
+        object: devops.css
+        src: devops.css
+        mode: put 
+   
+    - name: Configure s3 bucket as a website
+      community.aws.s3_website:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        name: resumes3bucket
+        suffix: index.html
+        state: present
